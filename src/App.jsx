@@ -31,7 +31,7 @@ const ScrollToTop = () => {
   return null;
 };
 
-// 스와이프 내비게이션 핸들러 (개선된 영역 격리 로직)
+// 스와이프 내비게이션 핸들러 (개선된 영역 격리 로직 - 멀티 테넌트 동적 지원)
 const SwipeNavigation = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,13 +42,17 @@ const SwipeNavigation = ({ children }) => {
   const normalizePath = (path) => path.replace(/\/$/, '') || '/';
   const currentPath = normalizePath(location.pathname);
 
-  // 내비게이션 세트 (관리자에서 menu 제외)
+  // 테넌트 ID 및 어드민 여부 동적 분석
+  const pathParts = currentPath.split('/').filter(Boolean);
+  const tenantId = pathParts[0] || 'dine-event';
+  const isAdmin = pathParts[1] === 'admin';
+
+  // 테넌트 맞춤형 내비게이션 세트 실시간 구성
   const sets = {
-    public: ['/', '/menu', '/event', '/location'],
-    admin: ['/admin/info', '/admin/event', '/admin/messages']
+    public: [`/${tenantId}`, `/${tenantId}/menu`, `/${tenantId}/event`, `/${tenantId}/location`],
+    admin: [`/${tenantId}/admin/info`, `/${tenantId}/admin/event`, `/${tenantId}/admin/messages`]
   };
 
-  const isAdmin = currentPath.startsWith('/admin');
   const activeSet = isAdmin ? sets.admin : sets.public;
   const minSwipeDistance = isAdmin ? 100 : 70;
 
@@ -173,6 +177,10 @@ const AdminRoot = () => (
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <Navigate to="/dine-event" replace />
+  },
+  {
+    path: "/:tenantId",
     element: <RootLayout />,
     children: [
       { index: true, element: <Home /> },
@@ -182,10 +190,10 @@ const router = createBrowserRouter([
     ]
   },
   {
-    path: "/admin",
+    path: "/:tenantId/admin",
     element: <AdminRoot />,
     children: [
-      { index: true, element: <Navigate to="/admin/info" replace /> },
+      { index: true, element: <Navigate to="info" replace /> },
       { path: "info", element: <AdminInfo /> },
       // { path: "menu", element: <AdminMenu /> }, // [제거]
       { path: "event", element: <AdminEvent /> },
