@@ -24,6 +24,10 @@ import AdminEvent from './pages/admin/AdminEvent'
 import AdminMessages from './pages/admin/AdminMessages'
 import AdminNoticeManager from './pages/admin/AdminNoticeManager' // [NEW] 공지 관리 센터 임포트
 
+// [NEW] 회사 소개 & 슈퍼관리자 페이지 임포트
+import CompanyIntro from './pages/CompanyIntro'
+import SuperAdmin from './pages/SuperAdmin'
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   React.useEffect(() => {
@@ -125,7 +129,27 @@ const RootLayout = () => {
 
 const RootLayoutInner = () => {
   const location = useLocation();
-  const { tenantConfig, tenantId } = useTenant();
+  const { tenantConfig, tenantId, tenantMeta } = useTenant();
+
+  // [NEW] 4단계: 매장 정지 시 차단 화면 송출
+  if (tenantMeta?.status === 'suspended') {
+    return (
+      <div style={{
+        background: '#0a0a0a', color: '#fff', minHeight: '100vh', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', fontFamily: "system-ui, sans-serif",
+        flexDirection: 'column', padding: '2rem', textAlign: 'center'
+      }}>
+        <span style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>🔒</span>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--primary)', marginBottom: '1rem' }}>
+          서비스 점검 및 이용 제한 안내
+        </h2>
+        <p style={{ color: '#888', maxWidth: '400px', lineHeight: 1.6, margin: '0 0 2rem 0', wordBreak: 'keep-all' }}>
+          현재 본 매장(ID: {tenantId})의 서비스 이용 기간이 만료되었거나 정지 조치되었습니다. 상세 문의는 마스터 관리자에게 문의해 주세요.
+        </p>
+        <a href="/" style={{ color: '#fff', textDecoration: 'underline', fontSize: '0.9rem' }}>홈페이지로 돌아가기</a>
+      </div>
+    );
+  }
 
   return (
     <SwipeNavigation>
@@ -164,19 +188,51 @@ const RootLayoutInner = () => {
 // [NEW] Admin Root to bypass Navbar/Footer (with TenantProvider)
 const AdminRoot = () => (
   <TenantProvider>
+    <AdminRootInner />
+  </TenantProvider>
+);
+
+const AdminRootInner = () => {
+  const { tenantId, tenantMeta } = useTenant();
+
+  // [NEW] 4단계: 매장 정지 시 관리센터 접근 원천 차단
+  if (tenantMeta?.status === 'suspended') {
+    return (
+      <div style={{
+        background: '#0a0a0a', color: '#fff', minHeight: '100vh', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', fontFamily: "system-ui, sans-serif",
+        flexDirection: 'column', padding: '2rem', textAlign: 'center'
+      }}>
+        <span style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>🔒</span>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#ff4d4d', marginBottom: '1rem' }}>
+          관리 센터 진입 제한
+        </h2>
+        <p style={{ color: '#888', maxWidth: '400px', lineHeight: 1.6, margin: '0 0 2rem 0', wordBreak: 'keep-all' }}>
+          해당 가맹점(ID: {tenantId})은 현재 서비스 정지 상태입니다. 마스터 시스템에서 서비스를 활성화해야 관리 센터 진입이 가능합니다.
+        </p>
+        <a href="/" style={{ color: '#fff', textDecoration: 'underline', fontSize: '0.9rem' }}>홈페이지로 돌아가기</a>
+      </div>
+    );
+  }
+
+  return (
     <SwipeNavigation>
       <div className="admin-app">
         <GlobalStyle />
         <AdminLayout />
       </div>
     </SwipeNavigation>
-  </TenantProvider>
-);
+  );
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/dine-event" replace />
+    element: <CompanyIntro />
+  },
+  {
+    path: "/master-admin",
+    element: <SuperAdmin />
   },
   {
     path: "/:tenantId",

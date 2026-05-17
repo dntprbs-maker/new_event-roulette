@@ -1,22 +1,103 @@
+import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { useTenant } from '../../context/TenantContext';
 
 const AdminLayout = () => {
-  const { tenantId } = useTenant();
+  const { tenantId, tenantMeta } = useTenant();
+  const isMobile = useIsMobile(768);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 사장님 비밀코드 관리자 인증 상태 로드
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem(`admin_auth_${tenantId}`) === 'true';
+  });
+  const [passcode, setPasscode] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const correctCode = tenantMeta?.adminPasscode || '1234';
+    if (passcode === correctCode) {
+      sessionStorage.setItem(`admin_auth_${tenantId}`, 'true');
+      setIsAuthenticated(true);
+      setError('');
+    } else {
+      setError('❌ 비밀코드가 올바르지 않습니다.');
+    }
+  };
+
+  // 인증 실패 시 로그인 폼 송출
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        background: 'radial-gradient(circle at 50% 50%, #151515 0%, #050505 100%)',
+        color: '#fff', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Outfit', 'Inter', sans-serif", padding: '1rem'
+      }}>
+        <div style={{
+          background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(197, 160, 89, 0.3)',
+          borderRadius: '24px', padding: '3rem 2rem', width: '100%', maxWidth: '380px',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎪</div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--primary)', marginBottom: '0.5rem' }}>
+            가맹점 로그인
+          </h2>
+          <p style={{ color: '#888', fontSize: '0.8rem', marginBottom: '2.5rem', wordBreak: 'keep-all' }}>
+            매장 사장님 전용 공간입니다. 관리자 전용 비밀코드를 입력하고 접속해 주세요.
+          </p>
+
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <input 
+              type="password" 
+              placeholder="사장님 비밀코드 입력" 
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              style={{
+                width: '100%', padding: '1rem', background: '#000', border: '1px solid #333',
+                borderRadius: '12px', color: '#fff', fontSize: '1rem', outline: 'none', textAlign: 'center',
+                letterSpacing: '3px'
+              }}
+              autoFocus
+            />
+
+            {error && (
+              <p style={{ color: '#ff4d4d', fontSize: '0.8rem', margin: 0, fontWeight: 'bold' }}>
+                {error}
+              </p>
+            )}
+
+            <button type="submit" style={{
+              padding: '1rem', borderRadius: '12px', background: 'linear-gradient(135deg, #fceabb 0%, #fccd4d 50%, #f8b500 100%)',
+              color: '#000', border: 'none', fontWeight: '900', fontSize: '1rem', cursor: 'pointer',
+              boxShadow: '0 5px 20px rgba(248, 181, 0, 0.2)'
+            }}>
+              매장 접속하기
+            </button>
+          </form>
+
+          <button 
+            onClick={() => navigate(`/${tenantId}`)}
+            style={{
+              background: 'transparent', border: 'none', color: '#666', marginTop: '1.5rem',
+              cursor: 'pointer', fontSize: '0.85rem', textDecoration: 'underline'
+            }}
+          >
+            일반 고객 화면으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // 사용자의 요청에 따라 '메뉴관리' 탭을 목록에서 제거하여 숨깁니다.
   const navItems = [
     { path: `/${tenantId}/admin/info`, label: '식당관리', icon: '🏠' },
     { path: `/${tenantId}/admin/event`, label: '이벤트', icon: '⚙️' },
     { path: `/${tenantId}/admin/messages`, label: '고객 관리', icon: '👥' },
   ];
-
-  const isMobile = useIsMobile(768);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // 현재 페이지가 관리자 메인(/admin/info)인 경우 뒤로가기를 숨기거나 다르게 처리할 수 있지만,
-  // 일단 모든 페이지에서 보이도록 설정합니다.
 
   return (
     <div style={{ minHeight: '100vh', background: '#050505' }}>

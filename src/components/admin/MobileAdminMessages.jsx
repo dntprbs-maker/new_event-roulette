@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 
 const MobileAdminMessages = ({ 
-  entries, uniqueData, smsTemplate, setSmsTemplate, clearAll 
+  entries, uniqueData, smsTemplate, setSmsTemplate, clearAll, handleDownloadCSV
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -74,18 +74,35 @@ const MobileAdminMessages = ({
         </div>
       )}
 
-      {/* 스마트 검색창 - sticky로 변경되어 별도 marginTop 불필요 */}
-      <div className="entry-search-wrapper">
-        <span style={{ fontSize: '1.1rem', opacity: 0.5 }}>🔍</span>
-        <input 
-          type="text" 
-          placeholder="고객 성함, 연락처, 경품으로 검색..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        {searchTerm && (
-          <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: '#fff', opacity: 0.5, fontSize: '1.2rem' }}>×</button>
-        )}
+      {/* 스마트 검색창 및 CSV 다운로드 연동 */}
+      <div style={{
+        position: 'fixed', top: '120px', left: '0.8rem', right: '0.8rem', zIndex: 99,
+        background: '#050505', padding: '10px 0', display: 'flex', gap: '8px'
+      }}>
+        <div className="entry-search-wrapper" style={{ flex: 1, position: 'static', margin: 0 }}>
+          <span style={{ fontSize: '1.1rem', opacity: 0.5 }}>🔍</span>
+          <input 
+            type="text" 
+            placeholder="성함, 연락처, 결과로 검색..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: '#fff', opacity: 0.5, fontSize: '1.2rem' }}>×</button>
+          )}
+        </div>
+        <button 
+          onClick={handleDownloadCSV}
+          style={{
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(197, 160, 89, 0.4)',
+            color: 'var(--primary)', padding: '0 15px', borderRadius: '15px', fontSize: '0.8rem',
+            fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', whiteSpace: 'nowrap'
+          }}
+        >
+          📥 CSV
+        </button>
       </div>
 
       {/* 응모 내역 슬림 리스트 - fixed 검색창(55px) + 여백 = 65px 만큼 아래로 내림 */}

@@ -47,6 +47,36 @@ const AdminMessages = () => {
     return Array.from(new Map(entries.map(item => [item.phone, item])).values());
   }, [entries]);
 
+  // [NEW] 3단계: CSV 응모자 목록 추출 다운로드 함수
+  const handleDownloadCSV = () => {
+    if (entries.length === 0) {
+      alert('다운로드할 응모 내역이 없습니다.');
+      return;
+    }
+
+    // 한글 깨짐 방지를 위해 UTF-8 BOM 주입
+    let csvContent = "\uFEFF";
+    csvContent += "날짜,이름,연락처,당첨결과\n";
+
+    entries.forEach(entry => {
+      const safeDate = `"${entry.date || ''}"`;
+      const safeName = `"${entry.name || ''}"`;
+      const safePhone = `"${entry.phone || ''}"`;
+      const safePrize = `"${entry.prize || ''}"`;
+      csvContent += `${safeDate},${safeName},${safePhone},${safePrize}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `이벤트룰렛_응모자목록_${tenantId}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const isMobile = useIsMobile(768);
 
   if (loading) return <div className="glass" style={{ padding: '2rem', textAlign: 'center' }}>내역 불러오는 중...</div>;
@@ -60,6 +90,7 @@ const AdminMessages = () => {
           smsTemplate={smsTemplate}
           setSmsTemplate={setSmsTemplate}
           clearAll={clearAll}
+          handleDownloadCSV={handleDownloadCSV}
         />
       </div>
     );
@@ -68,7 +99,14 @@ const AdminMessages = () => {
   return (
     <div className="glass" style={{ padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h3 style={{ color: 'var(--primary)' }}>📋 고객 응모 내역 (Cloud)</h3>
+        <h3 style={{ color: 'var(--primary)', margin: 0 }}>📋 고객 응모 내역 (Cloud)</h3>
+        <button 
+          onClick={handleDownloadCSV}
+          className="premium-gold-button"
+          style={{ padding: '0.6rem 1.5rem', borderRadius: '10px', fontSize: '0.85rem' }}
+        >
+          📥 CSV 내역 다운로드
+        </button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>

@@ -8,6 +8,10 @@ const TenantContext = createContext(null);
 export const TenantProvider = ({ children }) => {
   const { tenantId } = useParams();
   const [loading, setLoading] = useState(true);
+  const [tenantMeta, setTenantMeta] = useState({
+    status: 'active',
+    adminPasscode: '1234'
+  });
   const [tenantConfig, setTenantConfig] = useState({
     brandName: '이벤트룰렛',
     brandNameKr: '이벤트룰렛',
@@ -19,6 +23,23 @@ export const TenantProvider = ({ children }) => {
   useEffect(() => {
     const fetchTenantData = async () => {
       try {
+        // 1. 마스터 테넌트 메타정보 조회
+        const masterRef = doc(db, 'tenants', activeTenant);
+        const masterSnap = await getDoc(masterRef);
+        if (masterSnap.exists()) {
+          const mData = masterSnap.data();
+          setTenantMeta({
+            status: mData.status || 'active',
+            adminPasscode: mData.adminPasscode || '1234'
+          });
+        } else {
+          setTenantMeta({
+            status: 'active',
+            adminPasscode: '1234'
+          });
+        }
+
+        // 2. 홈 설정 정보 조회
         const tenantHomeRef = doc(db, 'tenants', activeTenant, 'settings', 'home');
         const tenantHomeDoc = await getDoc(tenantHomeRef);
         
@@ -67,6 +88,7 @@ export const TenantProvider = ({ children }) => {
     <TenantContext.Provider value={{ 
       tenantId: activeTenant, 
       tenantConfig, 
+      tenantMeta,
       loading,
       getDocRef,
       getColRef,
