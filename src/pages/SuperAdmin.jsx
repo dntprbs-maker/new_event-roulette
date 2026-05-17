@@ -145,23 +145,20 @@ const SuperAdmin = () => {
       });
 
       // 4. 가맹점 기본 6대 룰렛 경품 즉시 시딩 (바로 룰렛 구동 가능)
+      // 실제 테이블 모델 구조인 { name, totalCount, currentCount } 에 맞추어 데이터를 준비합니다.
       const defaultPrizes = [
-        { id: '1', name: '1등 샴페인 교환권 🍾', count: 3, probability: 5, color: '#FFD700' }, // 골드
-        { id: '2', name: '2등 시그니처 머그 ☕', count: 10, probability: 10, color: '#C0C0C0' }, // 실버
-        { id: '3', name: '3등 수제 케이크 🍰', count: 15, probability: 15, color: '#CD7F32' }, // 브론즈
-        { id: '4', name: '4등 아메리카노 1잔 ☕', count: 50, probability: 25, color: '#1a1a1a' },
-        { id: '5', name: '5등 프리미엄 초콜릿 🍫', count: 100, probability: 25, color: '#2a2a2a' },
-        { id: '6', name: '다음 기회에 (꽝) 🎡', count: 9999, probability: 20, color: '#0d0d0d' }
+        { name: '1등 샴페인 교환권 🍾', totalCount: 3, currentCount: 3 }, // 골드
+        { name: '2등 시그니처 머그 ☕', totalCount: 10, currentCount: 10 }, // 실버
+        { name: '3등 수제 케이크 🍰', totalCount: 15, currentCount: 15 }, // 브론즈
+        { name: '4등 아메리카노 1잔 ☕', totalCount: 50, currentCount: 50 },
+        { name: '5등 프리미엄 초콜릿 🍫', totalCount: 100, currentCount: 100 },
+        { name: '다음 기회에 (꽝) 🎡', totalCount: 9999, currentCount: 9999 }
       ];
 
-      for (const prize of defaultPrizes) {
-        await setDoc(doc(db, `tenants/${newStore.id}/content/prizes`, prize.id), {
-          name: prize.name,
-          count: prize.count,
-          probability: prize.probability,
-          color: prize.color
-        });
-      }
+      // prizes 문서는 content 서브컬렉션 아래의 단일 문서(doc)로 저장되어야 하므로 4개의 경로 세그먼트를 가집니다.
+      await setDoc(doc(db, `tenants/${newStore.id}/content`, 'prizes'), {
+        list: defaultPrizes
+      });
 
       setProvisionSuccess(`🎉 매장 [${newStore.brandName}] 이 성공적으로 프로비저닝되었습니다!`);
       setNewStore({ id: '', brandName: '', address: '', adminPasscode: '1234' });
