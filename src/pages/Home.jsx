@@ -8,7 +8,7 @@ import { useTenant } from '../context/TenantContext';
 const Home = () => {
   const { tenantId, getColRef, fetchDocWithFallback } = useTenant();
   const [settings, setSettings] = useState({ 
-    brandName: '다인이벤트',
+    brandName: '이벤트룰렛',
     topLabel: 'PREMIUM DINING EXPERIENCE',
     title: '특별한 미식 축제에 초대합니다', 
     subtitle: '최고급 식재료와 셰프의 장인정신이 깃든 시즌 메뉴를 지금 바로 만나보세요.',

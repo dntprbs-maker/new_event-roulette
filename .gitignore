@@ -22,3 +22,6 @@ favicon.svg
 icons.svg
 .env
 .env.*
+
+# Local Netlify folder
+.netlify
