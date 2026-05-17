@@ -100,6 +100,7 @@ const AdminMessages = () => {
     <div className="glass" style={{ padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h3 style={{ color: 'var(--primary)', margin: 0 }}>📋 고객 응모 내역 (Cloud)</h3>
+        {/* [차후 구현을 위해 보관]
         <button 
           onClick={handleDownloadCSV}
           className="premium-gold-button"
@@ -107,6 +108,7 @@ const AdminMessages = () => {
         >
           📥 CSV 내역 다운로드
         </button>
+        */}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3rem' }}>

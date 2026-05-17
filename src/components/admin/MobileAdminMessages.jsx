@@ -92,6 +92,7 @@ const MobileAdminMessages = ({
             <button onClick={() => setSearchTerm('')} style={{ background: 'none', border: 'none', color: '#fff', opacity: 0.5, fontSize: '1.2rem' }}>×</button>
           )}
         </div>
+        {/* [차후 구현을 위해 보관]
         <button 
           onClick={handleDownloadCSV}
           style={{
@@ -103,6 +104,7 @@ const MobileAdminMessages = ({
         >
           📥 CSV
         </button>
+        */}
       </div>
 
       {/* 응모 내역 슬림 리스트 - fixed 검색창(55px) + 여백 = 65px 만큼 아래로 내림 */}
