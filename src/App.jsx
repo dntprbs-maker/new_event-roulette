@@ -14,6 +14,7 @@ import Event from './pages/Event'
 import Location from './pages/Location'
 import { db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { TenantProvider, useTenant } from './context/TenantContext';
 
 // Admin Pages
 import AdminLayout from './pages/admin/AdminLayout'
@@ -113,22 +114,18 @@ const GlobalStyle = () => (
   `}} />
 );
 
-// [NEW] Root Layout for Public Pages
+// [NEW] Root Layout for Public Pages (with TenantProvider)
 const RootLayout = () => {
-  const location = useLocation();
-  const [brandName, setBrandName] = useState('DINE EVENT');
+  return (
+    <TenantProvider>
+      <RootLayoutInner />
+    </TenantProvider>
+  );
+};
 
-  useEffect(() => {
-    const fetchBrand = async () => {
-      try {
-        const homeDoc = await getDoc(doc(db, 'settings', 'home'));
-        if (homeDoc.exists() && homeDoc.data().brandName) setBrandName(homeDoc.data().brandName);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchBrand();
-  }, []);
+const RootLayoutInner = () => {
+  const location = useLocation();
+  const { tenantConfig, tenantId } = useTenant();
 
   return (
     <SwipeNavigation>
@@ -141,12 +138,12 @@ const RootLayout = () => {
         </main>
         <footer className="app-footer" style={{ padding: '4rem 2rem', textAlign: 'center', borderTop: '1px solid #111', background: '#000' }}>
           <p className="footer-copyright" style={{ color: '#444', fontSize: '0.85rem', maxWidth: '300px', margin: '0 auto' }}>
-            &copy; {new Date().getFullYear()} {brandName}. All rights reserved.
+            &copy; {new Date().getFullYear()} {tenantConfig.brandNameKr || tenantConfig.brandName || '이벤트룰렛'}. All rights reserved.
           </p>
-          {location.pathname === '/' && (
+          {location.pathname === `/${tenantId}` && (
             <div style={{ marginTop: '1.5rem' }}>
               <a 
-                href="/admin" 
+                href={`/${tenantId}/admin`} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="admin-open-link"
@@ -164,14 +161,16 @@ const RootLayout = () => {
   );
 };
 
-// [NEW] Admin Root to bypass Navbar/Footer
+// [NEW] Admin Root to bypass Navbar/Footer (with TenantProvider)
 const AdminRoot = () => (
-  <SwipeNavigation>
-    <div className="admin-app">
-      <GlobalStyle />
-      <AdminLayout />
-    </div>
-  </SwipeNavigation>
+  <TenantProvider>
+    <SwipeNavigation>
+      <div className="admin-app">
+        <GlobalStyle />
+        <AdminLayout />
+      </div>
+    </SwipeNavigation>
+  </TenantProvider>
 );
 
 const router = createBrowserRouter([

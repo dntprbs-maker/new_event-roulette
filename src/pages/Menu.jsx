@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useTenant } from '../context/TenantContext';
 
 const Menu = () => {
+  const { fetchDocWithFallback } = useTenant();
   const [menuImages, setMenuImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMenuData = async () => {
       try {
-        const menuDoc = await getDoc(doc(db, 'content', 'menu_image'));
+        const menuDoc = await fetchDocWithFallback('content', 'menu_image');
         if (menuDoc.exists()) {
           const data = menuDoc.data();
           const images = [];

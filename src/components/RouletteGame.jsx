@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useTenant } from '../context/TenantContext';
 
 const RouletteGame = () => {
+  const { tenantId, getDocRef, getColRef, fetchDocWithFallback } = useTenant();
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -21,7 +23,7 @@ const RouletteGame = () => {
 
   const fetchInitialPrizes = async () => {
     try {
-      const prizeDoc = await getDoc(doc(db, 'content', 'prizes'));
+      const prizeDoc = await fetchDocWithFallback('content', 'prizes');
       if (prizeDoc.exists()) {
         const data = prizeDoc.data().list || [];
         setPrizes(data);
@@ -52,7 +54,9 @@ const RouletteGame = () => {
     isLockedRef.current = true;
     setIsSpinning(true);
     
-    const snap = await getDoc(doc(db, 'content', 'prizes'));
+    const prizeDocRef = getDocRef('content', 'prizes');
+    // 최신 수량 검증을 위해 테넌트 전용 DB 강제 조회
+    const snap = await fetchDocWithFallback('content', 'prizes');
     const livePrizes = snap.exists() ? (snap.data().list || []) : [...prizes];
     setPrizes(livePrizes);
 
@@ -96,8 +100,8 @@ const RouletteGame = () => {
       );
       
       try {
-        await setDoc(doc(db, 'content', 'prizes'), { list: updatedPrizes });
-        await addDoc(collection(db, 'entries'), {
+        await setDoc(prizeDocRef, { list: updatedPrizes });
+        await addDoc(getColRef('entries'), {
           name: form.name,
           phone: validatedPhone,
           prize: winnerPrize.name,
@@ -187,7 +191,7 @@ const RouletteGame = () => {
                 className="btn-primary float-btn" 
                 onClick={() => {
                   alert('직원 확인이 완료되었습니다. 감사합니다!');
-                  navigate('/');
+                  navigate(`/${tenantId}`);
                 }}
                 style={{ 
                   padding: '0.6rem 1.8rem', 

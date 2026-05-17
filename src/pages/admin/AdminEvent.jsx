@@ -3,9 +3,11 @@ import { useNavigate, useBlocker } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import MobileAdminEvent from '../../components/admin/MobileAdminEvent';
 import { db } from '../../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { setDoc } from 'firebase/firestore';
+import { useTenant } from '../../context/TenantContext';
 
 const AdminEvent = () => {
+  const { tenantId, getDocRef, fetchDocWithFallback } = useTenant();
   const [prizes, setPrizes] = useState([]);
   const [originalPrizes, setOriginalPrizes] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,8 +27,7 @@ const AdminEvent = () => {
   useEffect(() => {
     const fetchPrizes = async () => {
       try {
-        const docRef = doc(db, 'content', 'prizes');
-        const docSnap = await getDoc(docRef);
+        const docSnap = await fetchDocWithFallback('content', 'prizes');
         let data = defaultPrizes;
         if (docSnap.exists() && docSnap.data().list && docSnap.data().list.length > 0) {
           data = docSnap.data().list;
@@ -70,7 +71,7 @@ const AdminEvent = () => {
     if (saving) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, 'content', 'prizes'), { list: prizes });
+      await setDoc(getDocRef('content', 'prizes'), { list: prizes });
       setOriginalPrizes(JSON.stringify(prizes));
       if (!silent) {
         setShowToast(true);
@@ -99,7 +100,7 @@ const AdminEvent = () => {
     setSaving(true);
     setShowResetConfirm(false);
     try {
-      await setDoc(doc(db, 'content', 'prizes'), { list: resetList });
+      await setDoc(getDocRef('content', 'prizes'), { list: resetList });
       setPrizes(resetList);
       setOriginalPrizes(JSON.stringify(resetList));
       setShowToast(true);

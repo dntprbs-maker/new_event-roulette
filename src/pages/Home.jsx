@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import heroImg from '../assets/hero.png';
 import { db } from '../firebase';
-import { doc, getDoc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { query, orderBy, onSnapshot } from 'firebase/firestore';
+import { useTenant } from '../context/TenantContext';
 
 const Home = () => {
+  const { tenantId, getColRef, fetchDocWithFallback } = useTenant();
   const [settings, setSettings] = useState({ 
     brandName: '다인이벤트',
     topLabel: 'PREMIUM DINING EXPERIENCE',
@@ -20,7 +22,7 @@ const Home = () => {
   useEffect(() => {
     const fetchHome = async () => {
       try {
-        const homeDoc = await getDoc(doc(db, 'settings', 'home'));
+        const homeDoc = await fetchDocWithFallback('settings', 'home');
         if (homeDoc.exists()) {
           const data = homeDoc.data();
           setSettings(prev => ({
@@ -39,7 +41,7 @@ const Home = () => {
     fetchHome();
 
     // 2. 공지사항 실시간 구독 (onSnapshot 사용으로 삭제/수정 즉시 반영)
-    const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
+    const q = query(getColRef('notices'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allNotices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
@@ -157,7 +159,7 @@ const Home = () => {
         </p>
         
         <div className="fade-in">
-          <Link to="/event" className="btn-primary" style={{ 
+          <Link to={`/${tenantId}/event`} className="btn-primary" style={{ 
             textDecoration: 'none', 
             display: 'inline-block', 
             padding: 'clamp(0.9rem, 3vw, 1.4rem) clamp(2.5rem, 8vw, 5rem)', 

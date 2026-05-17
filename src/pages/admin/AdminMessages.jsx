@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../../firebase';
-import { collection, query, orderBy, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { query, orderBy, getDocs, deleteDoc } from 'firebase/firestore';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import MobileAdminMessages from '../../components/admin/MobileAdminMessages';
+import { useTenant } from '../../context/TenantContext';
 
 const AdminMessages = () => {
+  const { tenantId, getDocRef, getColRef } = useTenant();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [smsTemplate, setSmsTemplate] = useState('[다인이벤트] 고객님, 새로운 이벤트가 시작되었습니다! 지금 바로 "식당명"으로 오셔서 이벤트에 참여해보세요!');
+  const [smsTemplate, setSmsTemplate] = useState('[이벤트룰렛] 고객님, 새로운 이벤트가 시작되었습니다! 지금 바로 매장으로 오셔서 이벤트에 참여해보세요!');
 
   useEffect(() => {
     fetchEntries();
@@ -16,7 +18,7 @@ const AdminMessages = () => {
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'entries'), orderBy('timestamp', 'desc'));
+      const q = query(getColRef('entries'), orderBy('timestamp', 'desc'));
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setEntries(data);
@@ -31,7 +33,7 @@ const AdminMessages = () => {
     if (window.confirm('클라우드의 모든 응모 내역을 삭제하시겠습니까?')) {
       try {
         for (const entry of entries) {
-          await deleteDoc(doc(db, 'entries', entry.id));
+          await deleteDoc(getDocRef('entries', entry.id));
         }
         setEntries([]);
         alert('삭제 완료');

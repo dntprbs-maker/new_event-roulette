@@ -4,10 +4,12 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import MobileAdminInfo from '../../components/admin/MobileAdminInfo';
 import AdminNotice from './AdminNotice';
 import { db, storage } from '../../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useTenant } from '../../context/TenantContext';
 
 const AdminInfo = () => {
+  const { tenantId, getDocRef, fetchDocWithFallback } = useTenant();
   const navigate = useNavigate();
   const [homeSettings, setHomeSettings] = useState({ brandName: '', topLabel: '', title: '', subtitle: '', heroImage: '' });
   const [menuImages, setMenuImages] = useState({ image1: '', image2: '' });
@@ -25,9 +27,9 @@ const AdminInfo = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const homeDoc = await getDoc(doc(db, 'settings', 'home'));
-        const locDoc = await getDoc(doc(db, 'settings', 'location'));
-        const menuDoc = await getDoc(doc(db, 'content', 'menu_image'));
+        const homeDoc = await fetchDocWithFallback('settings', 'home');
+        const locDoc = await fetchDocWithFallback('settings', 'location');
+        const menuDoc = await fetchDocWithFallback('content', 'menu_image');
         const hData = homeDoc.exists() ? homeDoc.data() : homeSettings;
         const lData = locDoc.exists() ? locDoc.data() : locationSettings;
         const mData = menuDoc.exists() ? { 
@@ -63,9 +65,9 @@ const AdminInfo = () => {
   const handleSave = async (silent = false) => {
     setSaving(true);
     try {
-      await setDoc(doc(db, 'settings', 'home'), homeSettings);
-      await setDoc(doc(db, 'settings', 'location'), locationSettings);
-      await setDoc(doc(db, 'content', 'menu_image'), { imageUrl: menuImages.image1, image1: menuImages.image1, image2: menuImages.image2 });
+      await setDoc(getDocRef('settings', 'home'), homeSettings);
+      await setDoc(getDocRef('settings', 'location'), locationSettings);
+      await setDoc(getDocRef('content', 'menu_image'), { imageUrl: menuImages.image1, image1: menuImages.image1, image2: menuImages.image2 });
       setOriginalData(JSON.stringify({ hData: homeSettings, lData: locationSettings, mData: menuImages }));
       if (!silent) { setShowToast(true); setTimeout(() => setShowToast(false), 2000); }
       return true;

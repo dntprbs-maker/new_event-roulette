@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db, storage } from '../../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useTenant } from '../../context/TenantContext';
 
 const AdminMenu = () => {
+  const { tenantId, getDocRef, fetchDocWithFallback } = useTenant();
   const [menuImageUrl, setMenuImageUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -14,7 +16,7 @@ const AdminMenu = () => {
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const menuDoc = await getDoc(doc(db, 'content', 'menu_image'));
+        const menuDoc = await fetchDocWithFallback('content', 'menu_image');
         if (menuDoc.exists()) {
           setMenuImageUrl(menuDoc.data().imageUrl || '');
         }
@@ -70,7 +72,7 @@ const AdminMenu = () => {
       const snapshot = await uploadBytes(storageRef, compressedBlob);
       const downloadURL = await getDownloadURL(snapshot.ref);
       
-      await setDoc(doc(db, 'content', 'menu_image'), { imageUrl: downloadURL });
+      await setDoc(getDocRef('content', 'menu_image'), { imageUrl: downloadURL });
       setMenuImageUrl(downloadURL);
 
       // 토스트 알림 표시 (2초)

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useTenant } from '../context/TenantContext';
 
 const Location = () => {
+  const { fetchDocWithFallback } = useTenant();
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLoc = async () => {
       try {
-        const locDoc = await getDoc(doc(db, 'settings', 'location'));
+        const locDoc = await fetchDocWithFallback('settings', 'location');
         if (locDoc.exists() && locDoc.data().address) {
           setAddress(locDoc.data().address);
         } else {

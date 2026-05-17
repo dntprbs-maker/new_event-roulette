@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { useTenant } from '../context/TenantContext';
 
 const NoticeBar = () => {
+  const { getColRef } = useTenant();
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +18,7 @@ const NoticeBar = () => {
         
         // [FIX] 복합 인덱스 불필요 - createdAt 단일 정렬 후 JS에서 isPinned 처리
         const q = query(
-          collection(db, 'notices'),
+          getColRef('notices'),
           orderBy('createdAt', 'desc')
         );
         

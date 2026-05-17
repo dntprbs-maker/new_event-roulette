@@ -1,12 +1,14 @@
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import { useTenant } from '../../context/TenantContext';
 
 const AdminLayout = () => {
+  const { tenantId } = useTenant();
   // 사용자의 요청에 따라 '메뉴관리' 탭을 목록에서 제거하여 숨깁니다.
   const navItems = [
-    { path: '/admin/info', label: '식당관리', icon: '🏠' },
-    { path: '/admin/event', label: '이벤트', icon: '⚙️' },
-    { path: '/admin/messages', label: '고객 관리', icon: '👥' },
+    { path: `/${tenantId}/admin/info`, label: '식당관리', icon: '🏠' },
+    { path: `/${tenantId}/admin/event`, label: '이벤트', icon: '⚙️' },
+    { path: `/${tenantId}/admin/messages`, label: '고객 관리', icon: '👥' },
   ];
 
   const isMobile = useIsMobile(768);
@@ -75,7 +77,7 @@ const AdminLayout = () => {
                 사장님 관리 센터
               </h2>
             </div>
-            <NavLink to="/" style={{ 
+            <NavLink to={`/${tenantId}`} style={{ 
               textDecoration: 'none', 
               padding: isMobile ? '0.3rem 0.6rem' : '0.4rem 1rem', 
               borderRadius: '6px', 
