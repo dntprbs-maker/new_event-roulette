@@ -151,35 +151,39 @@ const RootLayoutInner = () => {
     );
   }
 
+  const isTenantHome = location.pathname === `/${tenantId}` || location.pathname === `/${tenantId}/`;
+
   return (
     <SwipeNavigation>
       <div className="app">
         <ScrollToTop />
         <GlobalStyle />
-        <Navbar />
-        <main style={{ paddingTop: '60px' }}>
+        {!isTenantHome && <Navbar />}
+        <main style={{ paddingTop: isTenantHome ? '0px' : '60px' }}>
           <Outlet />
         </main>
-        <footer className="app-footer" style={{ padding: '4rem 2rem', textAlign: 'center', borderTop: '1px solid #111', background: '#000' }}>
-          <p className="footer-copyright" style={{ color: '#444', fontSize: '0.85rem', maxWidth: '300px', margin: '0 auto' }}>
-            &copy; {new Date().getFullYear()} {tenantConfig.brandNameKr || tenantConfig.brandName || '이벤트룰렛'}. All rights reserved.
-          </p>
-          {location.pathname === `/${tenantId}` && (
-            <div style={{ marginTop: '1.5rem' }}>
-              <a 
-                href={`/${tenantId}/admin`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="admin-open-link"
-                style={{ 
-                  display: 'inline-block', textDecoration: 'none', background: 'transparent', border: '1px solid #222', color: '#333', padding: '0.5rem 1rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.3s ease', zIndex: 99999, position: 'relative'
-                }}
-              >
-                관리자 센터 새 창으로 열기
-              </a>
-            </div>
-          )}
-        </footer>
+        {!isTenantHome && (
+          <footer className="app-footer" style={{ padding: '4rem 2rem', textAlign: 'center', borderTop: '1px solid #111', background: '#000' }}>
+            <p className="footer-copyright" style={{ color: '#444', fontSize: '0.85rem', maxWidth: '300px', margin: '0 auto' }}>
+              &copy; {new Date().getFullYear()} {tenantConfig.brandNameKr || tenantConfig.brandName || '이벤트룰렛'}. All rights reserved.
+            </p>
+          </footer>
+        )}
+        {isTenantHome && (
+          <div style={{ position: 'fixed', bottom: '15px', right: '15px', zIndex: 99999, opacity: 0.6 }}>
+            <a 
+              href={`/${tenantId}/admin`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="admin-open-link"
+              style={{ 
+                display: 'inline-block', textDecoration: 'none', background: 'rgba(0,0,0,0.6)', border: '1px solid #222', color: '#888', padding: '0.4rem 0.8rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', transition: 'all 0.3s ease'
+              }}
+            >
+              🔑 관리자 센터
+            </a>
+          </div>
+        )}
       </div>
     </SwipeNavigation>
   );
